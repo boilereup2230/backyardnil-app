@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --turf: #0C2340;
+  --turf-mid: #0A1C36;
+  --grass: #13294D;
+  --amber: #C5A065;
+  --amber-dim: #A8824D;
+  --chalk: #F7F7F2;
+  --fog: #E8EDE8;
+  --slate: #B8A488;
+
+  --background: var(--turf);
+  --foreground: var(--chalk);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-turf: var(--turf);
+  --color-turf-mid: var(--turf-mid);
+  --color-grass: var(--grass);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-chalk: var(--chalk);
+  --color-fog: var(--fog);
+  --color-slate: var(--slate);
+  --font-display: var(--font-saira-condensed);
+  --font-sans: var(--font-dm-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), 'DM Sans', sans-serif;
+}
