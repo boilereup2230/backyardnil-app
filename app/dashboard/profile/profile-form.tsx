@@ -201,6 +201,43 @@ export function ProfileForm({ profile }: { profile: AthleteProfile | null }) {
             defaultValue={profile?.tiktok_followers ?? ''}
           />
         </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <FormField
+            label="X (Twitter) Handle"
+            id="twitter_handle"
+            name="twitter_handle"
+            type="text"
+            placeholder="@username"
+            defaultValue={profile?.twitter_handle ?? ''}
+          />
+          <FormField
+            label="X (Twitter) Followers"
+            id="twitter_followers"
+            name="twitter_followers"
+            type="number"
+            min={0}
+            placeholder="3100"
+            defaultValue={profile?.twitter_followers ?? ''}
+          />
+        </div>
+
+        <FormField
+          label="Engagement Rate % (optional)"
+          id="engagement_rate"
+          name="engagement_rate"
+          type="number"
+          step="0.01"
+          min={0}
+          max={100}
+          placeholder="4.80"
+          defaultValue={profile?.engagement_rate ?? ''}
+          className="max-w-[160px]"
+        />
+        <p className="text-[11px] text-chalk/35 -mt-2">
+          Average engagement rate across your main platform. Used to fine-tune
+          suggested rate card pricing — leave blank if unsure.
+        </p>
       </section>
 
       {/* ─── Visibility ─── */}
