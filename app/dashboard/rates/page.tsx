@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import type { AthleteProfile, RateCard } from '@/lib/types';
-import { addRateCard, deleteRateCard, toggleRateCardActive } from '@/lib/actions/rates';
+import { addRateCard, deleteRateCard, toggleRateCardActive, applySuggestedRates } from '@/lib/actions/rates';
 import { FormField } from '@/components/form-field';
 import { RATE_DELIVERABLE_SUGGESTIONS } from '@/lib/data/rate-suggestions';
+import { generateSuggestedRates } from '@/lib/pricing';
 
 interface PageProps {
   searchParams: Promise<{ error?: string }>;
@@ -57,6 +58,18 @@ export default async function RatesPage({ searchParams }: PageProps) {
     .order('display_order', { ascending: true });
 
   const rates = (rateCards ?? []) as RateCard[];
+
+  // Generate suggested rates from athlete profile data, filtering out
+  // any deliverable types the athlete has already added manually.
+  const existingTypes = new Set(rates.map((r) => r.deliverable_type));
+  const suggestions = generateSuggestedRates({
+    instagramFollowers: athlete.instagram_followers,
+    tiktokFollowers: athlete.tiktok_followers,
+    twitterFollowers: athlete.twitter_followers,
+    engagementRate: athlete.engagement_rate,
+    sport: athlete.sport,
+    gradYear: athlete.grad_year,
+  }).filter((s) => !existingTypes.has(s.deliverableType));
 
   return (
     <div>
@@ -124,6 +137,61 @@ export default async function RatesPage({ searchParams }: PageProps) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Suggested rate card */}
+      {suggestions.length > 0 && (
+        <div className="bg-grass border border-amber/15 rounded-xl p-5 mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-amber mb-1">
+            Suggested Rate Card
+          </h2>
+          <p className="text-xs text-chalk/40 mb-4">
+            Based on {athlete.athlete_name}&apos;s social reach{athlete.engagement_rate ? ' and engagement rate' : ''}.
+            Adjust any price below, then add the ones you want to your rate card.
+          </p>
+
+          <form action={applySuggestedRates} className="space-y-3">
+            {suggestions.map((s) => (
+              <div
+                key={s.deliverableType}
+                className="flex items-center justify-between gap-4 bg-black/15 border border-white/5 rounded-lg px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-chalk">
+                    {s.deliverableType}
+                  </div>
+                  <div className="text-xs text-chalk/40 mt-0.5 truncate">
+                    {s.description}
+                  </div>
+                  <input
+                    type="hidden"
+                    name={`suggested_description__${s.deliverableType}`}
+                    value={s.description}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-chalk/40 text-sm">$</span>
+                  <input
+                    type="number"
+                    name={`suggested_price__${s.deliverableType}`}
+                    step="1"
+                    min="0"
+                    defaultValue={s.price}
+                    className="w-24 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-amber font-display font-bold focus:outline-none focus:border-amber transition-colors text-right"
+                  />
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="submit"
+              className="w-full bg-amber text-turf font-bold text-sm py-2.5 rounded-lg hover:bg-amber-dim transition-colors mt-2"
+            >
+              Add Suggested Rates to My Card
+            </button>
+          </form>
         </div>
       )}
 
