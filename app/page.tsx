@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 export default function Home() {
   return (
     <main className="flex-1 flex items-center justify-center p-6">
@@ -13,10 +12,10 @@ export default function Home() {
         </p>
         <div className="flex items-center justify-center gap-3">
           <Link
-            href="/a/demo"
+            href="/playbook"
             className="inline-block bg-amber text-turf font-bold text-sm px-6 py-3 rounded-lg hover:bg-amber-dim transition-colors"
           >
-            View Demo Profile
+            See It In Action
           </Link>
           <Link
             href="/discover"
