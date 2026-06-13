@@ -10,7 +10,7 @@ export default function Home() {
           Where local brands meet local legends. App scaffold — athlete
           profile + rate card MVP.
         </p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-3">
           <Link
             href="/playbook"
             className="inline-block bg-amber text-turf font-bold text-sm px-6 py-3 rounded-lg hover:bg-amber-dim transition-colors"
@@ -24,6 +24,12 @@ export default function Home() {
             Browse Athletes
           </Link>
         </div>
+        <Link
+          href="/login"
+          className="inline-block text-xs font-semibold text-chalk/40 hover:text-chalk transition-colors"
+        >
+          Athlete &amp; Family Login →
+        </Link>
       </div>
     </main>
   );
