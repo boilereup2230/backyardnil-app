@@ -107,3 +107,69 @@ export async function toggleRateCardActive(formData: FormData) {
   revalidatePath('/dashboard');
   redirect('/dashboard/rates');
 }
+
+/**
+ * Applies the suggested rate card to the athlete's profile, inserting one
+ * rate_cards row per suggested deliverable. Skips any deliverable types
+ * that already exist for this athlete (so re-applying doesn't duplicate).
+ * Accepts edited prices from the form — each suggestion's price field can
+ * be overridden before applying.
+ */
+export async function applySuggestedRates(formData: FormData) {
+  const supabase = await createClient();
+  const athleteId = await getOwnedAthleteId(supabase);
+
+  const { data: existing } = await supabase
+    .from('rate_cards')
+    .select('deliverable_type, display_order')
+    .eq('athlete_id', athleteId);
+
+  const existingTypes = new Set((existing ?? []).map((r) => r.deliverable_type));
+  let nextOrder =
+    existing && existing.length > 0
+      ? Math.max(...existing.map((r) => r.display_order)) + 1
+      : 0;
+
+  const rowsToInsert: {
+    athlete_id: string;
+    deliverable_type: string;
+    description: string | null;
+    price: number;
+    display_order: number;
+  }[] = [];
+
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith('suggested_price__')) continue;
+
+    const deliverableType = key.replace('suggested_price__', '');
+    const price = parseFloat(value as string);
+
+    if (isNaN(price) || price <= 0) continue;
+    if (existingTypes.has(deliverableType)) continue;
+
+    const descKey = `suggested_description__${deliverableType}`;
+    const description = (formData.get(descKey) as string) || null;
+
+    rowsToInsert.push({
+      athlete_id: athleteId,
+      deliverable_type: deliverableType,
+      description,
+      price,
+      display_order: nextOrder,
+    });
+
+    nextOrder += 1;
+  }
+
+  if (rowsToInsert.length > 0) {
+    const { error } = await supabase.from('rate_cards').insert(rowsToInsert);
+
+    if (error) {
+      redirect(`/dashboard/rates?error=${encodeURIComponent(error.message)}`);
+    }
+  }
+
+  revalidatePath('/dashboard/rates');
+  revalidatePath('/dashboard');
+  redirect('/dashboard/rates');
+}
