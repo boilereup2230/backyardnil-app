@@ -72,6 +72,13 @@ export async function saveProfile(formData: FormData) {
   const tiktokFollowersRaw = formData.get('tiktok_followers') as string;
   const tiktokFollowers = tiktokFollowersRaw ? parseInt(tiktokFollowersRaw, 10) : null;
 
+  const twitterHandle = (formData.get('twitter_handle') as string)?.trim() || null;
+  const twitterFollowersRaw = formData.get('twitter_followers') as string;
+  const twitterFollowers = twitterFollowersRaw ? parseInt(twitterFollowersRaw, 10) : null;
+
+  const engagementRateRaw = formData.get('engagement_rate') as string;
+  const engagementRate = engagementRateRaw ? parseFloat(engagementRateRaw) : null;
+
   const isPublished = formData.get('is_published') === 'on';
 
   const baseData = {
@@ -88,6 +95,9 @@ export async function saveProfile(formData: FormData) {
     instagram_followers: instagramFollowers,
     tiktok_handle: tiktokHandle,
     tiktok_followers: tiktokFollowers,
+    twitter_handle: twitterHandle,
+    twitter_followers: twitterFollowers,
+    engagement_rate: engagementRate,
     is_published: isPublished,
   };
 
