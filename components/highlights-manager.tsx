@@ -25,6 +25,7 @@ export function HighlightsManager({ athleteId, initialHighlights }: HighlightsMa
   const [highlights, setHighlights] = useState<Highlight[]>(initialHighlights);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -122,6 +123,7 @@ export function HighlightsManager({ athleteId, initialHighlights }: HighlightsMa
       return;
     }
     setHighlights((prev) => prev.filter((h) => h.id !== id));
+    setActiveHighlight(null);
   }
 
   return (
@@ -129,9 +131,11 @@ export function HighlightsManager({ athleteId, initialHighlights }: HighlightsMa
       {highlights.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
           {highlights.map((h) => (
-            <div
+            <button
               key={h.id}
-              className="relative aspect-square bg-black/20 border border-white/10 rounded-lg overflow-hidden group"
+              type="button"
+              onClick={() => setActiveHighlight(h)}
+              className="relative aspect-square bg-black/20 border border-white/10 rounded-lg overflow-hidden group cursor-pointer"
             >
               {h.media_type === 'photo' ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -141,26 +145,38 @@ export function HighlightsManager({ athleteId, initialHighlights }: HighlightsMa
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <video
-                  src={h.media_url}
-                  className="w-full h-full object-cover"
-                  muted
-                />
+                <>
+                  <video
+                    src={h.media_url}
+                    className="w-full h-full object-cover pointer-events-none"
+                    muted
+                    playsInline
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/35 transition-colors">
+                    <div className="w-9 h-9 rounded-full bg-black/60 flex items-center justify-center">
+                      <div className="w-0 h-0 border-y-[6px] border-y-transparent border-l-[10px] border-l-chalk ml-0.5" />
+                    </div>
+                  </div>
+                </>
               )}
-              <button
-                type="button"
-                onClick={() => handleDelete(h.id)}
-                className="absolute top-1.5 right-1.5 bg-black/70 text-chalk text-[11px] font-bold w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-500/80 transition-colors"
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(h.id);
+                }}
+                role="button"
+                tabIndex={0}
+                className="absolute top-1.5 right-1.5 bg-black/70 text-chalk text-[11px] font-bold w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-500/80 transition-colors z-10"
                 title="Remove"
               >
                 ×
-              </button>
+              </span>
               {h.media_type === 'video' && (
                 <span className="absolute bottom-1.5 left-1.5 bg-black/70 text-chalk text-[10px] font-bold px-1.5 py-0.5 rounded">
                   VIDEO
                 </span>
               )}
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -212,6 +228,44 @@ export function HighlightsManager({ athleteId, initialHighlights }: HighlightsMa
       <p className="text-[11px] text-chalk/35">
         Up to 6 items total, max 1 video. {highlights.length}/6 used.
       </p>
+
+      {/* ─── Lightbox ─── */}
+      {activeHighlight && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-6"
+          onClick={() => setActiveHighlight(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setActiveHighlight(null)}
+            className="absolute top-5 right-5 text-chalk/70 hover:text-chalk text-2xl leading-none w-10 h-10 flex items-center justify-center"
+            title="Close"
+          >
+            ×
+          </button>
+
+          <div
+            className="max-w-2xl w-full max-h-[80vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {activeHighlight.media_type === 'photo' ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={activeHighlight.media_url}
+                alt={activeHighlight.caption ?? 'Highlight'}
+                className="max-w-full max-h-[80vh] rounded-lg object-contain"
+              />
+            ) : (
+              <video
+                src={activeHighlight.media_url}
+                controls
+                autoPlay
+                className="max-w-full max-h-[80vh] rounded-lg"
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
