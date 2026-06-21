@@ -59,6 +59,8 @@ export async function saveProfile(formData: FormData) {
   const gradYearRaw = formData.get('grad_year') as string;
   const gradYear = gradYearRaw ? parseInt(gradYearRaw, 10) : null;
   const schoolName = (formData.get('school_name') as string)?.trim() || null;
+  const clubTeamName = (formData.get('club_team_name') as string)?.trim() || null;
+  const featuredBadgeText = (formData.get('featured_badge_text') as string)?.trim() || null;
   const state = formData.get('state') as string;
   const bio = (formData.get('bio') as string)?.trim() || null;
   const gpaRaw = formData.get('gpa') as string;
@@ -90,6 +92,8 @@ export async function saveProfile(formData: FormData) {
     position,
     grad_year: gradYear,
     school_name: schoolName,
+    club_team_name: clubTeamName,
+    featured_badge_text: featuredBadgeText,
     state,
     bio,
     gpa,
