@@ -28,6 +28,13 @@ export function InquiryForm({
   initialState,
 }: InquiryFormProps) {
   const [open, setOpen] = useState(initialState === 'error');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  function toggleRateCard(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   if (initialState === 'success') {
     return (
@@ -63,6 +70,9 @@ export function InquiryForm({
       <form action={submitInquiry} className="space-y-3">
         <input type="hidden" name="athlete_id" value={athleteId} />
         <input type="hidden" name="slug" value={slug} />
+        {selectedIds.map((id) => (
+          <input key={id} type="hidden" name="rate_card_ids" value={id} />
+        ))}
 
         <div className="grid grid-cols-2 gap-2.5">
           <div>
@@ -118,21 +128,37 @@ export function InquiryForm({
 
         {rateCards.length > 0 && (
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-wider text-chalk/40 mb-1">
-              Interested in (optional)
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-chalk/40 mb-1.5">
+              Interested in (select all that apply)
             </label>
-            <select
-              name="rate_card_id"
-              defaultValue=""
-              className="w-full bg-black/20 border border-white/10 rounded-md px-2.5 py-2 text-xs text-chalk focus:outline-none focus:border-amber transition-colors appearance-none"
-            >
-              <option value="">General inquiry</option>
+            <div className="space-y-1.5">
               {rateCards.map((rate) => (
-                <option key={rate.id} value={rate.id}>
-                  {rate.deliverable_type} — {formatPrice(rate.price)}
-                </option>
+                <label
+                  key={rate.id}
+                  className="flex items-center justify-between gap-2 bg-black/20 border border-white/10 rounded-md px-2.5 py-2 cursor-pointer hover:border-amber/30 transition-colors"
+                >
+                  <span className="flex items-center gap-2 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(rate.id)}
+                      onChange={() => toggleRateCard(rate.id)}
+                      className="w-3.5 h-3.5 accent-amber flex-shrink-0"
+                    />
+                    <span className="text-xs text-chalk truncate">
+                      {rate.deliverable_type}
+                    </span>
+                  </span>
+                  <span className="text-xs font-bold text-amber flex-shrink-0">
+                    {formatPrice(rate.price)}
+                  </span>
+                </label>
               ))}
-            </select>
+            </div>
+            {selectedIds.length === 0 && (
+              <p className="text-[10px] text-chalk/30 mt-1.5">
+                Leave unselected for a general inquiry.
+              </p>
+            )}
           </div>
         )}
 
