@@ -10,6 +10,7 @@ import type {
   RateCard,
   ComplianceStatus,
   StateRule,
+  AthleteAward,
 } from '@/lib/types';
 
 interface PageProps {
@@ -33,7 +34,7 @@ async function getAthleteData(slug: string) {
 
   const athlete = profile as AthleteProfile;
 
-  const [{ data: rateCards }, { data: compliance }, { data: stateRule }] =
+  const [{ data: rateCards }, { data: compliance }, { data: stateRule }, { data: awards }] =
     await Promise.all([
       supabase
         .from('rate_cards')
@@ -51,6 +52,11 @@ async function getAthleteData(slug: string) {
         .select('*')
         .eq('state_code', athlete.state)
         .maybeSingle(),
+      supabase
+        .from('athlete_awards')
+        .select('*')
+        .eq('athlete_id', athlete.id)
+        .order('display_order', { ascending: true }),
     ]);
 
   return {
@@ -58,6 +64,7 @@ async function getAthleteData(slug: string) {
     rateCards: (rateCards ?? []) as RateCard[],
     compliance: compliance as ComplianceStatus | null,
     stateRule: stateRule as StateRule | null,
+    awards: (awards ?? []) as AthleteAward[],
   };
 }
 
@@ -81,9 +88,14 @@ export default async function AthleteProfilePage({ params, searchParams }: PageP
     notFound();
   }
 
-  const { athlete, rateCards, compliance, stateRule } = data;
+  const { athlete, rateCards, compliance, stateRule, awards } = data;
 
-  const metaLine = [athlete.school_name, athlete.grad_year ? `Class of ${athlete.grad_year}` : null, athlete.state]
+  const metaLine = [
+    athlete.school_name,
+    athlete.club_team_name,
+    athlete.grad_year ? `Class of ${athlete.grad_year}` : null,
+    athlete.state,
+  ]
     .filter(Boolean)
     .join(' · ');
 
@@ -102,9 +114,16 @@ export default async function AthleteProfilePage({ params, searchParams }: PageP
             <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-amber/5" />
 
             <div className="relative">
-              <div className="inline-block text-[10px] font-bold uppercase tracking-widest text-amber bg-amber/10 border border-amber/20 rounded-full px-3 py-1 mb-3">
-                {getDisplaySport(athlete)}
-                {athlete.position ? ` · ${athlete.position}` : ''}
+              <div className="flex items-center gap-2 flex-wrap mb-3">
+                <div className="inline-block text-[10px] font-bold uppercase tracking-widest text-amber bg-amber/10 border border-amber/20 rounded-full px-3 py-1">
+                  {getDisplaySport(athlete)}
+                  {athlete.position ? ` · ${athlete.position}` : ''}
+                </div>
+                {athlete.featured_badge_text && (
+                  <div className="inline-block text-[10px] font-bold uppercase tracking-widest text-turf bg-amber rounded-full px-3 py-1">
+                    {athlete.featured_badge_text}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-4">
@@ -153,6 +172,26 @@ export default async function AthleteProfilePage({ params, searchParams }: PageP
                 label="GPA"
               />
             </div>
+
+            {/* Awards */}
+            {awards.length > 0 && (
+              <div className="mb-6">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-chalk/35 mb-2">
+                  Awards &amp; Honors
+                </div>
+                <ul className="space-y-1.5">
+                  {awards.map((a) => (
+                    <li
+                      key={a.id}
+                      className="text-xs text-chalk/60 flex items-center gap-2"
+                    >
+                      <span className="text-amber">●</span>
+                      {a.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Rate Card */}
             {rateCards.length > 0 && (
