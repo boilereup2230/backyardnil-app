@@ -12,6 +12,8 @@ export interface AthleteProfile {
   position: string | null;
   grad_year: number | null;
   school_name: string | null;
+  club_team_name: string | null;
+  featured_badge_text: string | null;
   state: string;
   bio: string | null;
   gpa: number | null;
@@ -37,6 +39,13 @@ export interface RateCard {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+export interface AthleteAward {
+  id: string;
+  athlete_id: string;
+  title: string;
+  display_order: number;
+  created_at: string;
 }
 export interface ComplianceStatus {
   id: string;
