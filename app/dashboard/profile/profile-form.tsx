@@ -7,6 +7,7 @@ import { FormTextarea } from '@/components/form-textarea';
 import { SportSelect } from '@/components/sport-select';
 import { PhotoUpload } from '@/components/photo-upload';
 import { HighlightsManager } from '@/components/highlights-manager';
+import { AwardsManager } from '@/components/awards-manager';
 import { US_STATES } from '@/lib/data/states';
 import type { AthleteProfile } from '@/lib/types';
 
@@ -21,12 +22,19 @@ interface Highlight {
   caption: string | null;
 }
 
+interface Award {
+  id: string;
+  title: string;
+}
+
 export function ProfileForm({
   profile,
   highlights,
+  awards,
 }: {
   profile: AthleteProfile | null;
   highlights: Highlight[];
+  awards: Award[];
 }) {
   const [sport, setSport] = useState(profile?.sport ?? '');
   const [photoUrl, setPhotoUrl] = useState(profile?.photo_url ?? '');
@@ -130,6 +138,15 @@ export function ProfileForm({
           </div>
         </div>
 
+        <FormField
+          label="Club / Travel Team (optional)"
+          id="club_team_name"
+          name="club_team_name"
+          type="text"
+          placeholder="e.g. Indy Heat 16U"
+          defaultValue={profile?.club_team_name ?? ''}
+        />
+
         <div>
           <label
             htmlFor="state"
@@ -179,6 +196,39 @@ export function ProfileForm({
           defaultValue={profile?.gpa ?? ''}
           className="max-w-[140px]"
         />
+      </section>
+
+      {/* ─── Achievements ─── */}
+      <section className="space-y-4">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-amber">
+          Achievements
+        </h2>
+
+        <FormField
+          label="Featured Badge (optional)"
+          id="featured_badge_text"
+          name="featured_badge_text"
+          type="text"
+          placeholder="e.g. 2025 All-Conference"
+          defaultValue={profile?.featured_badge_text ?? ''}
+        />
+        <p className="text-[11px] text-chalk/35 -mt-2">
+          Your single biggest headline — shown as a badge on your public
+          profile and in the athlete directory.
+        </p>
+
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-chalk/50 mb-1.5">
+            Awards &amp; Honors
+          </label>
+          {profile?.id ? (
+            <AwardsManager athleteId={profile.id} initialAwards={awards} />
+          ) : (
+            <p className="text-xs text-chalk/35 bg-black/15 border border-white/5 rounded-lg px-4 py-3">
+              Save your profile once first, then you can add awards.
+            </p>
+          )}
+        </div>
       </section>
 
       {/* ─── Social ─── */}
