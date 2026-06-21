@@ -5,6 +5,8 @@ import { saveProfile } from '@/lib/actions/profile';
 import { FormField } from '@/components/form-field';
 import { FormTextarea } from '@/components/form-textarea';
 import { SportSelect } from '@/components/sport-select';
+import { PhotoUpload } from '@/components/photo-upload';
+import { HighlightsManager } from '@/components/highlights-manager';
 import { US_STATES } from '@/lib/data/states';
 import type { AthleteProfile } from '@/lib/types';
 
@@ -12,14 +14,41 @@ const selectClasses =
   'w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-chalk ' +
   'focus:outline-none focus:border-amber transition-colors appearance-none';
 
-export function ProfileForm({ profile }: { profile: AthleteProfile | null }) {
+interface Highlight {
+  id: string;
+  media_type: 'photo' | 'video';
+  media_url: string;
+  caption: string | null;
+}
+
+export function ProfileForm({
+  profile,
+  highlights,
+}: {
+  profile: AthleteProfile | null;
+  highlights: Highlight[];
+}) {
   const [sport, setSport] = useState(profile?.sport ?? '');
+  const [photoUrl, setPhotoUrl] = useState(profile?.photo_url ?? '');
 
   return (
     <form action={saveProfile} className="space-y-8">
       {profile && (
         <input type="hidden" name="athlete_id" value={profile.id} />
       )}
+      <input type="hidden" name="photo_url" value={photoUrl} />
+
+      {/* ─── Photo ─── */}
+      <section className="space-y-4">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-amber">
+          Profile Photo
+        </h2>
+        <PhotoUpload
+          athleteId={profile?.id ?? null}
+          currentPhotoUrl={profile?.photo_url ?? null}
+          onUploaded={(url) => setPhotoUrl(url)}
+        />
+      </section>
 
       {/* ─── Identity ─── */}
       <section className="space-y-4">
@@ -238,6 +267,25 @@ export function ProfileForm({ profile }: { profile: AthleteProfile | null }) {
           Average engagement rate across your main platform. Used to fine-tune
           suggested rate card pricing — leave blank if unsure.
         </p>
+      </section>
+
+      {/* ─── Highlights ─── */}
+      <section className="space-y-4">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-amber">
+          Highlights
+        </h2>
+        <p className="text-xs text-chalk/40 -mt-2">
+          Show brands a quick look at you in action — up to 6 photos/video,
+          max 1 video.
+        </p>
+        {profile?.id ? (
+          <HighlightsManager athleteId={profile.id} initialHighlights={highlights} />
+        ) : (
+          <p className="text-xs text-chalk/35 bg-black/15 border border-white/5 rounded-lg px-4 py-3">
+            Save your profile once first, then you can add highlight photos
+            and video.
+          </p>
+        )}
       </section>
 
       {/* ─── Visibility ─── */}
