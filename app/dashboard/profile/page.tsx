@@ -25,6 +25,8 @@ export default async function ProfilePage({ searchParams }: PageProps) {
     caption: string | null;
   }[] = [];
 
+  let awards: { id: string; title: string }[] = [];
+
   if (profile) {
     const { data: highlightRows } = await supabase
       .from('athlete_highlights')
@@ -33,6 +35,14 @@ export default async function ProfilePage({ searchParams }: PageProps) {
       .order('display_order', { ascending: true });
 
     highlights = highlightRows ?? [];
+
+    const { data: awardRows } = await supabase
+      .from('athlete_awards')
+      .select('id, title')
+      .eq('athlete_id', profile.id)
+      .order('display_order', { ascending: true });
+
+    awards = awardRows ?? [];
   }
 
   return (
@@ -52,7 +62,11 @@ export default async function ProfilePage({ searchParams }: PageProps) {
           {error}
         </div>
       )}
-      <ProfileForm profile={profile as AthleteProfile | null} highlights={highlights} />
+      <ProfileForm
+        profile={profile as AthleteProfile | null}
+        highlights={highlights}
+        awards={awards}
+      />
     </div>
   );
 }
