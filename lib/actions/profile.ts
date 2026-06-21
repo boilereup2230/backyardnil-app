@@ -79,6 +79,8 @@ export async function saveProfile(formData: FormData) {
   const engagementRateRaw = formData.get('engagement_rate') as string;
   const engagementRate = engagementRateRaw ? parseFloat(engagementRateRaw) : null;
 
+  const photoUrl = (formData.get('photo_url') as string)?.trim() || null;
+
   const isPublished = formData.get('is_published') === 'on';
 
   const baseData = {
@@ -98,6 +100,7 @@ export async function saveProfile(formData: FormData) {
     twitter_handle: twitterHandle,
     twitter_followers: twitterFollowers,
     engagement_rate: engagementRate,
+    photo_url: photoUrl,
     is_published: isPublished,
   };
 
